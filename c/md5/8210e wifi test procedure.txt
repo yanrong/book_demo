@@ -1,0 +1,10 @@
+8210e wifi test procedure
+
+1.install serial port drivers,find related serial port number comm2 or comm3 etc.(Driver Genisu haha)
+
+2.usb232 cable,connect to device,use securCRT connect to serial port
+
+3.defalut output work correctly,need switch on input in uboot.
+
+4.using sz,rz(receive/send) to transimmtion file to local/board.
+board receive (rz) directory is /yaffs

@@ -1,0 +1,196 @@
+#ifndef DOUBLE_LIST_H
+#define DOUBLE_LIST_H
+
+#include "double_node.h"
+
+#include <iostream>
+#include <cstdlib>
+
+using std::cout;
+using std::endl;
+
+template <typename T>
+class double_list
+{
+    private:
+        double_node<T> *head;
+
+    public:
+        double_list():head(new double_node<T>()){
+             head->prev_ptr=head;
+             head->next_ptr=head;
+        }
+        ~double_list(){
+            make_empty();
+            delete head;
+        }
+
+        void make_empty();
+        int length();
+        double_node<T>* find_node(int=0);
+        double_node<T>* find_elem(T);
+        bool insert_node(T,int=0);
+        T remove_node(int=0);
+        T get_node(int=0);
+        void list_info();
+};
+
+template <typename T>
+void double_list<T>::make_empty()
+{
+    double_node<T> *phead=head->next_ptr,*pdel=0;
+    while(phead!=head){
+        pdel=phead;
+        phead=pdel->next_ptr;
+        delete pdel;
+    }
+    head->prev_ptr=head;
+    head->next_ptr=head;
+}
+
+template <typename T>
+int double_list<T>::length()
+{
+    double_node<T> *prev=head->prev_ptr,*next=head->next_ptr;
+    int counter=0;
+    while(1){
+        if(prev->next_ptr==next)    //if list is empty
+            break;
+        if(prev==next&&prev!=head){  //just have a node
+            counter++;
+            break;
+        }
+        counter+=2;
+        prev=prev->prev_ptr;
+        next=next->next_ptr;
+    }
+    return counter;
+}
+
+template <typename T>
+double_node<T>* double_list<T>::find_node(int pos)
+{
+    if(pos<=0){
+        cout<<"error find position pos"<<endl;
+        return 0;
+    }
+
+    double_node<T> *phead=head->next_ptr;
+    for(int i=0;i!=pos&&phead;i++)
+    {
+        phead=phead->next_ptr;
+        if(phead==head){
+            cout<<"empty list,double_list<T>::find_value(int)"<<endl;
+            return 0;
+        }
+    }
+    return phead;
+}
+template <typename T>
+double_node<T>* double_list<T>::find_elem(T item)
+{
+    double_node<T> *prev=head->prev_ptr,*next=head->next_ptr;
+
+    /** prev->next_ptr!next : if the list is nonempty,
+     *  prev!=next: pointer prev and next do not point to a same node
+     */
+    while(prev->next_ptr!=next&&prev!=next){    /**find data in tow direction*/
+        if(prev->data==item)
+            return prev;
+        if(next->data==item)
+            return next;
+        prev=prev->prev_ptr;
+        next=next->next_ptr;
+    }
+    cout<<"can't find node is equal item"<<endl;
+    return 0;
+}
+
+template <typename T>
+bool double_list<T>::insert_node(T item,int pos)
+{
+    if(pos<0){
+		cout<<"The n is out of boundary"<<endl;
+		return false;
+	}
+
+	double_node<T> *node=new double_node<T>(item);
+	double_node<T> *phead=head;
+	if(!node){
+        cout<<"new a node error,double_node<T> *=new double_node<T>(item);"<<endl;
+        return false;
+	}
+	for(int i=0;i!=pos;i++){
+        phead=phead->next_ptr;
+        if(phead==head){
+            cout<<"position is out of boundary"<<endl;
+            return false;
+        }
+	}
+
+	node->next_ptr=phead->next_ptr;
+	phead->next_ptr=node;
+	node->prev_ptr=phead;
+	node->next_ptr->prev_ptr=node;
+
+	return true;
+}
+
+template<typename T>
+T double_list<T>::remove_node(int pos)
+{
+    if(pos<0){
+      
+        cout<<"pos is out boundary:T double_list<T>::remove_node(int pos)"<<endl;
+        exit(1);
+    }
+
+    double_node<T> *node_ptr=head, *del_ptr=0;
+    for(int i=0;i!=pos;i++){
+        node_ptr=node_ptr->next_ptr;
+        if(node_ptr==head){
+            cout<<"error posistion,T double_list<T>::remove_node(int)"<<endl;
+            exit(1);
+        }
+    }
+
+    del_ptr=node_ptr;
+    node_ptr->next_ptr->prev_ptr=node_ptr->prev_ptr;
+    del_ptr->prev_ptr->next_ptr=node_ptr->next_ptr;
+    T tmp=del_ptr->data;
+    delete del_ptr;
+    return tmp;
+}
+
+template <typename T>
+T double_list<T>::get_node(int pos)
+{
+    if(pos<0){
+        cout<<"error position,T double_list<T>::get_node(int)"<<endl;
+        exit(1);
+    }
+    double_node<T> *cur_ptr=head;
+    for(int i=0;i<pos;i++){
+        cur_ptr=cur_ptr->next_ptr;
+        if(cur_ptr==head){
+            cout<<"out of boundary,T double_list<T>::get_node(int)"<<endl;
+            exit(1);
+        }
+    }
+    return cur_ptr->data;
+}
+
+template <typename T>
+void double_list<T>::list_info()
+{
+    double_node<T> *cur_ptr=head->next_ptr;
+    cout<<"list info is:\nhead-->";
+    while(cur_ptr!=head)
+    {
+        cout<<cur_ptr->data<<"-->";
+        cur_ptr=cur_ptr->next_ptr;
+    }
+    cout<<"NULL"<<endl;
+}
+
+#endif // DOUBLE_LIST_H

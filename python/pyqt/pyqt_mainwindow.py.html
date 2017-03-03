@@ -1,0 +1,54 @@
+<html><head>
+<title>pyqt_mainwindow.py</title>
+<meta name="Generator" content="htmlizer/[twisted, version 13.2.0]" />
+<link rel="alternate" href="pyqt_mainwindow.py" type="text/x-python" />
+
+</head>
+<body>
+<pre><span class="py-src-comment">#/usr/bin/env python2</span>
+<span class="py-src-comment">#mainwindow</span>
+
+<span class="py-src-keyword">import</span> <span class="py-src-variable">sys</span>
+
+<span class="py-src-keyword">from</span> <span class="py-src-variable">PyQt4</span>.<span class="py-src-variable">QtGui</span> <span class="py-src-keyword">import</span> *
+<span class="py-src-keyword">from</span> <span class="py-src-variable">PyQt4</span>.<span class="py-src-variable">QtCore</span> <span class="py-src-keyword">import</span> <span class="py-src-variable">SIGNAL</span>,<span class="py-src-variable">SLOT</span>
+
+<span class="py-src-keyword">class</span> <span class="py-src-identifier">MainWindow</span>(<span class="py-src-parameter">QMainWindow</span>):
+	<span class="py-src-keyword">def</span> <span class="py-src-identifier">__init__</span>(<span class="py-src-parameter">self</span>,<span class="py-src-parameter">parent</span> = <span class="py-src-parameter">None</span>):
+		<span class="py-src-variable">QMainWindow</span>.<span class="py-src-variable">__init__</span>(<span class="py-src-variable">self</span>,<span class="py-src-variable">parent</span>)
+  <span class="py-src-variable">self</span>.<span class="py-src-variable">resize</span>(<span class="py-src-number">350</span>,<span class="py-src-number">250</span>)
+  <span class="py-src-variable">self</span>.<span class="py-src-variable">setWindowTitle</span>(<span class="py-src-string">'mainwindow'</span>)
+  
+  <span class="py-src-comment">#create textedit as central widget</span>
+  <span class="py-src-variable">textEdit</span> = <span class="py-src-variable">QTextEdit</span>()
+  <span class="py-src-variable">self</span>.<span class="py-src-variable">setCentralWidget</span>(<span class="py-src-variable">textEdit</span>)
+  
+  <span class="py-src-comment">#create a QAction for adding menu list</span>
+  <span class="py-src-comment">#set it's short cut keyboard combination</span>
+  <span class="py-src-variable">exit</span> = <span class="py-src-variable">QAction</span>(<span class="py-src-variable">QIcon</span>(<span class="py-src-string">''</span>),<span class="py-src-string">'Exit'</span>,<span class="py-src-variable">self</span>)
+  <span class="py-src-variable">exit</span>.<span class="py-src-variable">setShortcut</span>(<span class="py-src-string">'Ctrl+W'</span>)
+  
+  <span class="py-src-comment">#set mainwindow's status tips ,connect correspondant signas(notify) to slot(action)</span>
+  <span class="py-src-variable">self</span>.<span class="py-src-variable">setStatusTip</span>(<span class="py-src-string">'Exit Application'</span>)
+  <span class="py-src-variable">self</span>.<span class="py-src-variable">connect</span>(<span class="py-src-variable">exit</span>,<span class="py-src-variable">SIGNAL</span>(<span class="py-src-string">'triggered()'</span>),<span class="py-src-variable">qApp</span>,<span class="py-src-variable">SLOT</span>(<span class="py-src-string">'quit()'</span>))
+  
+  <span class="py-src-variable">self</span>.<span class="py-src-variable">statusBar</span>()
+  
+  <span class="py-src-comment">#get a global menubar for add menu</span>
+  <span class="py-src-variable">menubar</span> = <span class="py-src-variable">self</span>.<span class="py-src-variable">menuBar</span>()
+  <span class="py-src-variable">file</span> = <span class="py-src-variable">menubar</span>.<span class="py-src-variable">addMenu</span>(<span class="py-src-string">'&amp;File'</span>)
+  <span class="py-src-variable">file</span>.<span class="py-src-variable">addAction</span>(<span class="py-src-variable">exit</span>)
+  
+  <span class="py-src-comment">#create a toolbar for apps</span>
+  <span class="py-src-variable">toolbar</span> = <span class="py-src-variable">self</span>.<span class="py-src-variable">addToolBar</span>(<span class="py-src-string">'Exit'</span>)
+  <span class="py-src-variable">toolbar</span>.<span class="py-src-variable">addAction</span>(<span class="py-src-variable">exit</span>)
+
+<span class="py-src-comment">#start application</span>
+<span class="py-src-variable">app</span> = <span class="py-src-variable">QApplication</span>(<span class="py-src-variable">sys</span>.<span class="py-src-variable">argv</span>)
+<span class="py-src-variable">main</span> = <span class="py-src-variable">MainWindow</span>()
+<span class="py-src-comment">#show our defined UI</span>
+<span class="py-src-variable">main</span>.<span class="py-src-variable">show</span>()
+
+<span class="py-src-variable">sys</span>.<span class="py-src-variable">exit</span>(<span class="py-src-variable">app</span>.<span class="py-src-variable">exec_</span>())
+</pre>
+</body>

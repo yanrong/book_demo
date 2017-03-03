@@ -1,0 +1,18 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef unsigned long int ulong;
+
+#define WeekLen 7		
+#define MonthLen 12		
+#define YearDays 365		
+#define PntWidth 4		
+#define ChineseWidth 2		
+
+
+const int ChineseSize = sizeof("´Ï") - 1;
+
+
+char const *Week_str[WeekLen] = {"

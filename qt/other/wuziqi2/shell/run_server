@@ -1,0 +1,13 @@
+#!/bin/bash
+
+ser=server
+cli=client
+
+if [ $1 = $ser ]
+then
+	cd ../server/ && ./server
+elif [ $1 = $cli ]
+then
+	cd ../client/ && ./client
+fi
+
