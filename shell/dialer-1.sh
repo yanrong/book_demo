@@ -18,7 +18,7 @@
 #
 
 times=1
-devices='b8063522'
+devices='6c8a1316'
 rand_arr=()
 
 function rand(){
@@ -28,23 +28,23 @@ function rand(){
   echo $(($num%$max+$min))
 }
 
-#touch the keyboard
 function touch_tap()
 {
 	for v in ${rand_arr[@]}
 	do
+		swipe_lock
 		if [ $v -lt 10 ];then
 			echo "input $v"
 		else
 			:
 		fi
-		swipe_lock
+		
 		case $v in
 		0)
-            adb -s ${devices} shell input tap 240 670 # 1
+            adb -s ${devices} shell input tap 240 670
             ;;
         1)
-            adb -s ${devices} shell input tap 110 400 # 2
+            adb -s ${devices} shell input tap 110 400
             ;;
         2)
             adb -s ${devices} shell input tap 240 390
@@ -86,9 +86,9 @@ function touch_tap()
 
 function do_test()
 {
-	for ((i=0; i < 12; i++))
+	for ((i=0; i < 11; i++))
 	do
-		rnd=$(rand 0 10)
+		rnd=$(rand 0 11)
 		rand_arr[$i]=$rnd
 	done
 	
@@ -99,7 +99,7 @@ function screen_on()
 {
 	#get screen status ON/OFF
 	pstat=`adb -s ${devices} shell dumpsys power | grep -i "display power" | awk -F "=" '{print $2}'`
-	if [ ${pstat} == "OFF" ];then
+	if [ "${pstat}" == "OFF" ];then
 		adb -s ${devices} shell input keyevent "KEYCODE_POWER" #home key
 	else
 		echo "screen is ON"
@@ -108,14 +108,14 @@ function screen_on()
 	swipe_lock #unlock the keyguard
 }
 
-#unlock keyguard
 function swipe_lock()
 {	
-	#get keygurad status by prop
 	lstat=`adb -s ${devices} shell dumpsys window policy | grep mInputRestricted | awk -F "=" '{print $2}'`
-	if [ ${lstat} == "true" ]; then
+	if [ "${lstat}" == "true" ]; then
 		adb -s ${devices} shell input keyevent "KEYCODE_HOME"
-		adb -s ${devices} shell input swipe 240 800 420 300
+		adb -s ${devices} shell input swipe 240 800 320 600 100
+		sleep 1
+		adb -s ${devices} shell input keyevent "KEYCODE_HOME"
 	else
 		: #do nothing
 	fi
@@ -128,6 +128,13 @@ do
 	start_time=`date "+%Y-%m-%d %H:%M:%S"`
 	printf 'Start time at %s, total times %s \n' "${start_time}" "${times}"
 	
+	online=`adb devices | grep -i "${devices}" |awk '{print $2}'`
+	if [ "${online}" == "offline" ];then
+		adb -s ${devices} reboot
+	else
+		echo "Device is online"
+	fi
+	
 	state=`adb -s ${devices} get-state`
 	#echo "device status ${state}"
 	if [ "${state}" == "device" ];then
@@ -137,19 +144,19 @@ do
 		adb -s ${devices} wait-for-device
 		sleep 25
 	fi
-	sleep 3
-
+	
+	#sleep 3
 	k=1;
 	tmp_times=$times
 	screen_on
 
-	for i in $(seq 1 4)  
+	for i in $(seq 1 9)  
 	do
 		adb -s ${devices} shell am start -a android.intent.action.DIAL -d tel:1
 	
 		if [ $? -eq 0 ];then
 			echo "start app ok, DO TEST "
-			#if start app successful, do touch test
+			#sleep 2
 			do_test
 		else
 			k=1
