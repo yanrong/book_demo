@@ -18,7 +18,8 @@
 #
 
 times=1
-devices='6c8a1316'
+devices='b8063522'
+app_name='com.android.dialer'
 rand_arr=()
 
 function rand(){
@@ -28,11 +29,12 @@ function rand(){
   echo $(($num%$max+$min))
 }
 
+#touch the keyboard
 function touch_tap()
 {
 	for v in ${rand_arr[@]}
 	do
-		swipe_lock
+		#swipe_lock
 		if [ $v -lt 10 ];then
 			echo "input $v"
 		else
@@ -41,10 +43,10 @@ function touch_tap()
 		
 		case $v in
 		0)
-            adb -s ${devices} shell input tap 240 670
+            adb -s ${devices} shell input tap 240 670 # 1
             ;;
         1)
-            adb -s ${devices} shell input tap 110 400
+            adb -s ${devices} shell input tap 110 400 # 2
             ;;
         2)
             adb -s ${devices} shell input tap 240 390
@@ -98,41 +100,46 @@ function do_test()
 function screen_on()
 {
 	#get screen status ON/OFF
-	pstat=`adb -s ${devices} shell dumpsys power | grep -i "display power" | awk -F "=" '{print $2}'`
-	if [ "${pstat}" == "OFF" ];then
+	pstat=`adb -s ${devices} shell dumpsys window |grep screenState | awk -F "=" '{print $2}'`
+	if [ "${pstat}" == "0" ];then
+		printf "screen off\n"
 		adb -s ${devices} shell input keyevent "KEYCODE_POWER" #home key
-	else
-		echo "screen is ON"
+	elif [ "${pstat}" == "2" ];then
+		printf "screen is ON\n"
 	fi
 
 	swipe_lock #unlock the keyguard
 }
 
+#unlock keyguard
 function swipe_lock()
 {	
-	lstat=`adb -s ${devices} shell dumpsys window policy | grep mInputRestricted | awk -F "=" '{print $2}'`
-	if [ "${lstat}" == "true" ]; then
+	lstat=`adb -s ${devices} shell dumpsys window | grep mCurrentFocus | awk  '{print $3}' | awk -F "/" '{print $1}'`
+	
+	if [ "${lstat}" == "com.android.launcher3" ]; then
 		adb -s ${devices} shell input keyevent "KEYCODE_HOME"
-		adb -s ${devices} shell input swipe 240 800 320 600 100
-		sleep 1
+	elif [ "${lstat}" == "us.sliide.onlineplus" ]; then
 		adb -s ${devices} shell input keyevent "KEYCODE_HOME"
+		adb -s ${devices} shell input swipe 240 850 460 0 100
+	elif [ "${lstat}" == "com.android.dialer" ]; then
+		printf "$lstat in front, skip\n"
+	elif [ "${lstat}" == "StatusBar}" ]; then
+		adb -s ${devices} shell input swipe 240 850 460 0 100
 	else
-		: #do nothing
+		adb -s ${devices} shell input keyevent "KEYCODE_HOME"
 	fi
 }
 
-
+is_reboot="false"
 while :
 do
-	echo "====================================="
 	start_time=`date "+%Y-%m-%d %H:%M:%S"`
-	printf 'Start time at %s, total times %s \n' "${start_time}" "${times}"
+	printf '*******Start time at %s. \n' "${start_time}***********"
 	
 	online=`adb devices | grep -i "${devices}" |awk '{print $2}'`
 	if [ "${online}" == "offline" ];then
-		adb -s ${devices} reboot
-	else
-		echo "Device is online"
+		printf "system is offline,Continue!!!\n"
+		continue
 	fi
 	
 	state=`adb -s ${devices} get-state`
@@ -142,38 +149,47 @@ do
 	else
 		echo "Block the script until device is available"
 		adb -s ${devices} wait-for-device
-		sleep 25
+		if [ "${is_reboot}" == "true" ];then
+			echo "detectd device wait 27s"
+			sleep 27
+		else
+			echo "quick detect, wait 3s"
+			sleep 3
+		fi
 	fi
-	
-	#sleep 3
-	k=1;
-	tmp_times=$times
-	screen_on
 
-	for i in $(seq 1 9)  
+	is_reboot="false"
+	for ((j=1;j<25;j++))
 	do
+		screen_on
 		adb -s ${devices} shell am start -a android.intent.action.DIAL -d tel:1
 	
 		if [ $? -eq 0 ];then
 			echo "start app ok, DO TEST "
-			#sleep 2
+			#if start app successful, do touch test
 			do_test
+			times=$(($times+1))
 		else
-			k=1
-			times=$tmp_times
-			printf "FAILED IN %s times dialer" "${times}"
+			printf "Failed start dialer, continue\n"
 			continue
 		fi
-		times=$(($times+1))
-		k=$(($k+1))
+
+		printf "\n=== total times = $times\n"
+
+		mod=$(($j%5))  
+		printf "=== mod = $mod j = $j \n"
+		if [ $mod -eq 0 ]; then
+			printf "\n### RESTART app ###\n\n"
+			adb -s ${devices} shell am force-stop "${app_name}"
+			sleep 1
+		fi
+
 		sleep 1
 	done
 
-	printf "K = %s\n" "${k}"
-	if [ $k -gt 4 ];then
-		adb -s ${devices} reboot
-	else
-		echo "nothing"
-	fi
-	echo "====================================="
+	#reboot system
+	printf "\n### system REBOOT ###\n\n"
+	adb -s ${devices} reboot
+	is_reboot="true"
+
 done
