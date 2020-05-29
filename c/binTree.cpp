@@ -1,10 +1,11 @@
-#include <stdio.h>
+#include <iostream>
 #include <stack>
 using std::stack;
+using std::cout;
 
 typedef int data_t;
 typedef struct binary_tree_node_t{
-	pbin_tree *lchild,rchild,
+	pbin_tree lchild,rchild;
 	data_t data;
 }bin_tree,*pbin_tree;
 
@@ -56,7 +57,7 @@ void pre_order_noncursive_2nd(pbin_tree root)
 void in_order_noncursive(pbin_tree root)
 {
 	stack<pbin_tree> s_tree;
-	pbin_tree *ptree = root;
+	pbin_tree ptree = root;
 
 	while(ptree || !s_tree.empty())
 	{
@@ -111,13 +112,13 @@ void post_order_nonrecursive(pbin_tree root)
 			s_tree.pop();
 			ptree = NULL;
 		}
-		else pttree = ptree->rchild;
+		else ptree = ptree->rchild;
 	}
 }
 
 void post_order_nonrecursive(pbin_tree root) //using two stack 
 {
-	stack<pbin_tree> s_tree1 s_tree2;
+	stack<pbin_tree> s_tree1, s_tree2;
 	pbin_tree ptree ;
 	s_tree1.push(root); //add root to stack ,make sure root is last visited when pop stack
 	while(!s_tree1.empty())
@@ -132,7 +133,7 @@ void post_order_nonrecursive(pbin_tree root) //using two stack
 		3.Then push its left child followed by its right child to the first stack.
 		4.Repeat step 2) and 3) until the first stack is empty.
 		5.Once done, the second stack would have all the nodes ready to be traversed
- 		in post-order. Pop off the nodes from the second stack one by one and you’re done.
+		in post-order. Pop off the nodes from the second stack one by one and you’re done.
 		*/
 		if(ptree->lchild) s_tree1.push(ptree->lchild);
 		if(ptree->rchild) s_tree1.push(ptree->rchild);
@@ -151,11 +152,12 @@ void level_order(pbin_tree broot)
 	pbin_tree root = broot;
 	if(!root) return;
 
-	int front=rear=0;
+	int front, rear;
+	front = rear = 0;
 	//add root in queue head
 	queue[rear++] = root;
 
-	while(front != root) //if queue is not full
+	while(front != rear) //if queue is not full
 	{
 		cout<<queue[front]->data<<" "; //access queue front data
 		if(queue[front]->lchild)  //if left child is exited, push at the end
@@ -171,10 +173,9 @@ void level_order(pbin_tree broot)
 	}
 }
 
-
 int depth_tree(pbin_tree root)
 {
 	//actually got bigger bwtween left and right height, puls root(1).
 	return (depth_tree(root->lchild) > depth_tree(root->rchild)?
-	?depth_tree(root->lchild):depth_tree(root->rchild))+1;
+	depth_tree(root->lchild):depth_tree(root->rchild))+1;
 }
